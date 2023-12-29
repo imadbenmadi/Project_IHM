@@ -1,16 +1,29 @@
 package project_ihm;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Project_IHM extends Application {
 
     private static Project_IHM instance; // Singleton instance
+
+    private List<Rental> reqEmpruntsList = new ArrayList<>();
+
+    public List<Rental> getReqEmpruntsList() {
+        return reqEmpruntsList;
+    }
 
     public static Project_IHM getInstance() {
         return instance;
@@ -32,48 +45,42 @@ public class Project_IHM extends Application {
             // Get the controller for the Login window
             LoginController loginController = loginLoader.getController();
 
-            // Set a reference to the main application in the LoginController
-            loginController.setMainApp(this);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public void showLogin() {
-        try {
-            FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("Login.fxml"));
-            Parent loginRoot = loginLoader.load();
-            Stage loginStage = new Stage();
-            loginStage.setScene(new Scene(loginRoot));
-            loginStage.setTitle("Login");
-            loginStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    // Method to show the Dashboard window
-    public void showDashboard() {
-        try {
-            FXMLLoader dashboardLoader = new FXMLLoader(getClass().getResource("Dashboard.fxml"));
-            Parent dashboardRoot = dashboardLoader.load();
-            Stage dashboardStage = new Stage();
-            dashboardStage.setScene(new Scene(dashboardRoot));
-            dashboardStage.setTitle("Dashboard");
-            dashboardStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    // Method to show the Etudiant window
-    public void showEtudiant() {
+    public void storeData() {
         try {
-            FXMLLoader etudiantLoader = new FXMLLoader(getClass().getResource("Etudiant.fxml"));
-            Parent etudiantRoot = etudiantLoader.load();
-            Stage etudiantStage = new Stage();
-            etudiantStage.setScene(new Scene(etudiantRoot));
-            etudiantStage.setTitle("Etudiant");
-            etudiantStage.show();
+            // Store reqEmpruntsList to ReqEmprunts field in Database.json
+            File jsonFile = new File("Database.json");
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(jsonFile);
+            ArrayNode reqEmpruntsNode = (ArrayNode) rootNode.path("ReqEmprunts");
+
+            for (Rental rental : reqEmpruntsList) {
+                ObjectNode reqEmpruntNode = objectMapper.createObjectNode();
+                reqEmpruntNode.put("numeroEmprunt", rental.getNumeroEmprunt());
+                reqEmpruntNode.put("duree", rental.getDuration());
+
+                ObjectNode etudiantNode = objectMapper.createObjectNode();
+                etudiantNode.put("numeroEtudiant", rental.getEtudiant().getNumeroEtudiant());
+                etudiantNode.put("nom", rental.getEtudiant().getNom());
+                etudiantNode.put("prenom", rental.getEtudiant().getPrenom());
+                reqEmpruntNode.set("etudiant", etudiantNode);
+
+                ObjectNode livreNode = objectMapper.createObjectNode();
+                livreNode.put("numeroSerie", rental.getBook().getNumeroSerie());
+                livreNode.put("titre", rental.getBook().getTitre());
+                reqEmpruntNode.set("livre", livreNode);
+
+                reqEmpruntsNode.add(reqEmpruntNode);
+            }
+
+            // Write the updated JSON back to the file
+            objectMapper.writeValue(jsonFile, rootNode);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

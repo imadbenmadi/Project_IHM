@@ -2,6 +2,9 @@ package project_ihm;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -32,7 +35,6 @@ public class LoginController {
     @FXML
     private Button LoginButton;
 
-    private Project_IHM mainApp; // Reference to the main application
 
     @FXML
     private void initialize() {
@@ -40,9 +42,6 @@ public class LoginController {
         setupLoginLogic();
     }
 
-    public void setMainApp(Project_IHM mainApp) {
-        this.mainApp = mainApp;
-    }
 
     private void setupLoginLogic() {
         LoginButton.setOnAction(this::handleClick);
@@ -76,6 +75,10 @@ public class LoginController {
 
                 if (inputUsername.equalsIgnoreCase(username) && inputPassword.equals(pwd)) {
                     isEtudiant = true;
+
+                    // Set etudiant information in the context
+                    ApplicationContext.setEtudiantContext(etudiant);
+
                     break;
                 }
             }
@@ -107,16 +110,41 @@ public class LoginController {
             return new ArrayList<>(); // Return an empty list if there's an issue
         }
     }
+    public void showDashboard() {
+        try {
+            FXMLLoader dashboardLoader = new FXMLLoader(getClass().getResource("Dashboard.fxml"));
+            Parent dashboardRoot = dashboardLoader.load();
+            Stage dashboardStage = new Stage();
+            dashboardStage.setScene(new Scene(dashboardRoot));
+            dashboardStage.setTitle("Dashboard");
+            dashboardStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    // Method to show the Etudiant window
+    public void showEtudiant() {
+        try {
+            FXMLLoader etudiantLoader = new FXMLLoader(getClass().getResource("Etudiant.fxml"));
+            Parent etudiantRoot = etudiantLoader.load();
+            Stage etudiantStage = new Stage();
+            etudiantStage.setScene(new Scene(etudiantRoot));
+            etudiantStage.setTitle("Etudiant");
+            etudiantStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private void openAdminDashboard() {
         // Open the Admin Dashboard
-        mainApp.showDashboard();
+        showDashboard();
         closeLoginWindow();
     }
 
     private void openEtudiantDashboard() {
         // Open the Etudiant Dashboard
-        mainApp.showEtudiant();
+        showEtudiant();
         closeLoginWindow();
     }
 

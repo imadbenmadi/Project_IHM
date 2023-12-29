@@ -2,41 +2,28 @@ package project_ihm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
+import javafx.scene.control.TextFormatter;
+
 import javafx.util.converter.IntegerStringConverter;
-import javafx.scene.Parent;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class EtudiantController {
-    public void showLogin() {
-        try {
-            FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("Login.fxml"));
-            Parent loginRoot = loginLoader.load();
-            Stage loginStage = new Stage();
-            loginStage.setScene(new Scene(loginRoot));
-            loginStage.setTitle("Login");
-            loginStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @FXML
     public Button LogoutBtn;
@@ -57,13 +44,10 @@ public class EtudiantController {
     private TableColumn<Book, Integer> exemplairesDisponiblesColumn;
 
     @FXML
-    private TableColumn<Book, Button> rentButtonColumn;
-
-    @FXML
-    private TableColumn<Book, String> statusColumn; // Added status column
+    private TableColumn<Book, Node> rentButtonColumn; // Updated to Node type
 
     private List<Book> bookList = new ArrayList<>();
-    private List<Rental> rentRequests = new ArrayList<>();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @FXML
     private void initialize() {
@@ -71,19 +55,30 @@ public class EtudiantController {
     }
 
     @FXML
-    private void handleLogoutButtonAction(ActionEvent event) {
+    private void handleLogoutButtonAction() {
         showLogin();
         ((Stage) LogoutBtn.getScene().getWindow()).close();
     }
+
+    public void showLogin() {
+        try {
+            FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("Login.fxml"));
+            Parent loginRoot = loginLoader.load();
+            Stage loginStage = new Stage();
+            loginStage.setScene(new Scene(loginRoot));
+            loginStage.setTitle("Login");
+            loginStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void initializeBookTable() {
         numeroSerieColumn.setCellValueFactory(new PropertyValueFactory<>("numeroSerie"));
         titreColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
         nomAuteurColumn.setCellValueFactory(new PropertyValueFactory<>("nomAuteur"));
         exemplairesDisponiblesColumn.setCellValueFactory(new PropertyValueFactory<>("exemplairesDisponibles"));
         rentButtonColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(createRentButton(cellData.getValue())));
-
-        // Remove the local declaration of statusColumn
-        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         // Load book data from JSON file
         loadBookDataFromJson();
@@ -92,20 +87,22 @@ public class EtudiantController {
         bookTable.getItems().addAll(bookList);
     }
 
-
-    private Button createRentButton(Book book) {
-        Button rentButton = new Button("Rent");
-        rentButton.setOnAction(event -> handleRentBook(book));
-        return rentButton;
+    private Node createRentButton(Book book) {
+        if (book.getExemplairesDisponibles() > 0) {
+            Button rentButton = new Button("Rent");
+            rentButton.setOnAction(event -> handleRentBook(book));
+            rentButton.getStyleClass().add("pending-button"); // Set style programmatically
+            return rentButton;
+        } else {
+            Label statusLabel = new Label("Not Available");
+            statusLabel.getStyleClass().add("not-available-label");
+            return statusLabel;
+        }
     }
 
     private void loadBookDataFromJson() {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            // Replace with your actual path to the JSON file
             File jsonFile = new File("Database.json");
-
-            // Read JSON file and extract book data
             JsonNode rootNode = objectMapper.readTree(jsonFile);
             JsonNode livresNode = rootNode.path("livres");
 
@@ -117,7 +114,6 @@ public class EtudiantController {
                 String nomAuteur = livreNode.path("nomAuteur").asText();
                 int exemplairesDisponibles = livreNode.path("exemplairesDisponibles").asInt();
 
-                // Create Book object and add it to the list
                 Book book = new Book(numeroSerie, titre, nomAuteur, exemplairesDisponibles);
                 bookList.add(book);
             }
@@ -126,14 +122,12 @@ public class EtudiantController {
         }
     }
 
-    @FXML
     private void handleRentBook(Book selectedBook) {
         if (selectedBook != null && selectedBook.getExemplairesDisponibles() > 0) {
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Rent Duration");
             dialog.setHeaderText("Enter rental duration in days:");
 
-            // Use TextFormatter to allow only numeric input
             TextField textField = dialog.getEditor();
             TextFormatter<Integer> textFormatter = new TextFormatter<>(new IntegerStringConverter(), 0,
                     change -> {
@@ -150,16 +144,31 @@ public class EtudiantController {
                 try {
                     int duration = Integer.parseInt(durationStr);
                     if (duration > 0) {
-                        selectedBook.decrementExemplairesDisponibles();
-                        selectedBook.setStatus("Pending Approval"); // Set the status to pending
-
-                        bookTable.refresh();
-
                         Rental rental = new Rental();
                         rental.setBook(selectedBook);
                         rental.setDuration(duration);
 
-                        storeRentRequest(rental);
+                        // Add the rental request to the global reqEmpruntsList
+                        Project_IHM.getInstance().getReqEmpruntsList().add(rental);
+
+                        // Update the status in the table
+                        Node statusLabel = createStatusLabel("Pending");
+
+                        // Replace the Rent button with the status label in the RentButton column
+                        rentButtonColumn.setCellFactory(column -> new TableCell<>() {
+                            @Override
+                            protected void updateItem(Node item, boolean empty) {
+                                super.updateItem(item, empty);
+                                if (empty) {
+                                    setGraphic(null);
+                                } else {
+                                    setGraphic(item);
+                                }
+                            }
+                        });
+
+                        // Remove the book from the list (not the table)
+                        bookList.remove(selectedBook);
                     } else {
                         System.out.println("Invalid duration. Please enter a positive integer.");
                     }
@@ -171,11 +180,10 @@ public class EtudiantController {
             System.out.println("Selected book is not available for rental.");
         }
     }
-
-    private void storeRentRequest(Rental rental) {
-        rentRequests.add(rental);
-    }
-
-    public void handleRentBook(ActionEvent actionEvent) {
+    // New method to create a status label
+    private Node createStatusLabel(String status) {
+        Label statusLabel = new Label(status);
+        statusLabel.getStyleClass().add("status-label");
+        return statusLabel;
     }
 }

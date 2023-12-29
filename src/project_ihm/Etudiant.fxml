@@ -39,11 +39,7 @@
                         <PropertyValueFactory property="rentButton"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="statusColumn" prefWidth="200.0" text="Status">
-                    <cellValueFactory>
-                        <PropertyValueFactory property="status"/>
-                    </cellValueFactory>
-                </TableColumn>
+
             </columns>
         </TableView>
         <Label layoutX="254.0" layoutY="29.0" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Kasdi Merbah Libarry" textFill="#8b8b8b" />
