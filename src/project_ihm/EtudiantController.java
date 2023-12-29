@@ -2,6 +2,8 @@ package project_ihm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -121,7 +123,45 @@ public class EtudiantController {
             e.printStackTrace();
         }
     }
+    public List<Rental> reqEmpruntsList = new ArrayList<>();
+    public List<Rental> getReqEmpruntsList() {
+        return reqEmpruntsList;
+    }
 
+    public void storeData() {
+        try {
+            // Store reqEmpruntsList to ReqEmprunts field in Database.json
+            File jsonFile = new File("Database.json");
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(jsonFile);
+            ArrayNode reqEmpruntsNode = (ArrayNode) rootNode.path("ReqEmprunts");
+
+            for (Rental rental : reqEmpruntsList) {
+                ObjectNode reqEmpruntNode = objectMapper.createObjectNode();
+                reqEmpruntNode.put("numeroEmprunt", rental.getNumeroEmprunt());
+                reqEmpruntNode.put("duree", rental.getDuration());
+
+                ObjectNode etudiantNode = objectMapper.createObjectNode();
+                etudiantNode.put("numeroEtudiant", rental.getEtudiant().getNumeroEtudiant());
+                etudiantNode.put("nom", rental.getEtudiant().getNom());
+                etudiantNode.put("prenom", rental.getEtudiant().getPrenom());
+                reqEmpruntNode.set("etudiant", etudiantNode);
+
+                ObjectNode livreNode = objectMapper.createObjectNode();
+                livreNode.put("numeroSerie", rental.getBook().getNumeroSerie());
+                livreNode.put("titre", rental.getBook().getTitre());
+                reqEmpruntNode.set("livre", livreNode);
+
+                reqEmpruntsNode.add(reqEmpruntNode);
+            }
+
+            // Write the updated JSON back to the file
+            objectMapper.writeValue(jsonFile, rootNode);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private void handleRentBook(Book selectedBook) {
         if (selectedBook != null && selectedBook.getExemplairesDisponibles() > 0) {
             TextInputDialog dialog = new TextInputDialog();
@@ -149,7 +189,7 @@ public class EtudiantController {
                         rental.setDuration(duration);
 
                         // Add the rental request to the global reqEmpruntsList
-                        Project_IHM.getInstance().getReqEmpruntsList().add(rental);
+                        getReqEmpruntsList().add(rental);
 
                         // Update the status in the table
                         Node statusLabel = createStatusLabel("Pending");
@@ -167,8 +207,9 @@ public class EtudiantController {
                             }
                         });
 
-                        // Remove the book from the list (not the table)
-                        bookList.remove(selectedBook);
+                        // Store data after making changes
+                        storeData();
+
                     } else {
                         System.out.println("Invalid duration. Please enter a positive integer.");
                     }
@@ -180,6 +221,7 @@ public class EtudiantController {
             System.out.println("Selected book is not available for rental.");
         }
     }
+
     // New method to create a status label
     private Node createStatusLabel(String status) {
         Label statusLabel = new Label(status);

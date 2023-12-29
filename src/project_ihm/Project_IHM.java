@@ -19,11 +19,8 @@ public class Project_IHM extends Application {
 
     private static Project_IHM instance; // Singleton instance
 
-    private List<Rental> reqEmpruntsList = new ArrayList<>();
 
-    public List<Rental> getReqEmpruntsList() {
-        return reqEmpruntsList;
-    }
+
 
     public static Project_IHM getInstance() {
         return instance;
@@ -51,40 +48,7 @@ public class Project_IHM extends Application {
         }
     }
 
-    public void storeData() {
-        try {
-            // Store reqEmpruntsList to ReqEmprunts field in Database.json
-            File jsonFile = new File("Database.json");
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(jsonFile);
-            ArrayNode reqEmpruntsNode = (ArrayNode) rootNode.path("ReqEmprunts");
 
-            for (Rental rental : reqEmpruntsList) {
-                ObjectNode reqEmpruntNode = objectMapper.createObjectNode();
-                reqEmpruntNode.put("numeroEmprunt", rental.getNumeroEmprunt());
-                reqEmpruntNode.put("duree", rental.getDuration());
-
-                ObjectNode etudiantNode = objectMapper.createObjectNode();
-                etudiantNode.put("numeroEtudiant", rental.getEtudiant().getNumeroEtudiant());
-                etudiantNode.put("nom", rental.getEtudiant().getNom());
-                etudiantNode.put("prenom", rental.getEtudiant().getPrenom());
-                reqEmpruntNode.set("etudiant", etudiantNode);
-
-                ObjectNode livreNode = objectMapper.createObjectNode();
-                livreNode.put("numeroSerie", rental.getBook().getNumeroSerie());
-                livreNode.put("titre", rental.getBook().getTitre());
-                reqEmpruntNode.set("livre", livreNode);
-
-                reqEmpruntsNode.add(reqEmpruntNode);
-            }
-
-            // Write the updated JSON back to the file
-            objectMapper.writeValue(jsonFile, rootNode);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public static void main(String[] args) {
         launch(args);
