@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.scene.control.Label;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
 public class LoginController {
+    @FXML
+    private Label errorLabel;
 
     @FXML
     private TextField InputUserName;
@@ -118,7 +121,9 @@ public class LoginController {
     }
 
     private void setErrorText(String errorMessage) {
-        // Your implementation to set the error text
+        if (errorLabel != null) {
+            errorLabel.setText(errorMessage);
+        }
     }
 
     private void closeLoginWindow() {
