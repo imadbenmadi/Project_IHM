@@ -15,7 +15,7 @@
                 <Image url="@Logo.png" />
             </image>
         </ImageView>
-      <Button layoutX="577.0" layoutY="15.0" mnemonicParsing="false" style="-fx-background-color: red; -fx-font-size: 16px; -fx-font-weight: bold;" text="LogOut" textFill="WHITE" />
+      <Button layoutX="577.0" layoutY="15.0" mnemonicParsing="false" style="-fx-background-color: red; -fx-font-size: 16px; -fx-font-weight: bold;" text="LogOut" textFill="WHITE" onAction="#handleLogoutButtonAction" fx:id="LogoutBtn" />
       <Line endX="557.9595336914062" endY="-7.62939453125E-6" layoutX="115.0" layoutY="74.0" startX="-119.00000762939453" startY="-7.62939453125E-6" stroke="#aeaeae" />
     </children>
 </AnchorPane>

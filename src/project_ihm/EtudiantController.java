@@ -8,10 +8,14 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
+import javafx.scene.Parent;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +25,21 @@ import java.util.List;
 import java.util.Optional;
 
 public class EtudiantController {
+    public void showLogin() {
+        try {
+            FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("Login.fxml"));
+            Parent loginRoot = loginLoader.load();
+            Stage loginStage = new Stage();
+            loginStage.setScene(new Scene(loginRoot));
+            loginStage.setTitle("Login");
+            loginStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public Button LogoutBtn;
 
     @FXML
     private TableView<Book> bookTable;
@@ -51,6 +70,11 @@ public class EtudiantController {
         initializeBookTable();
     }
 
+    @FXML
+    private void handleLogoutButtonAction(ActionEvent event) {
+        showLogin();
+        ((Stage) LogoutBtn.getScene().getWindow()).close();
+    }
     private void initializeBookTable() {
         numeroSerieColumn.setCellValueFactory(new PropertyValueFactory<>("numeroSerie"));
         titreColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
@@ -58,10 +82,8 @@ public class EtudiantController {
         exemplairesDisponiblesColumn.setCellValueFactory(new PropertyValueFactory<>("exemplairesDisponibles"));
         rentButtonColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(createRentButton(cellData.getValue())));
 
-        // Add the following line to include the "status" property
-        TableColumn<Book, String> statusColumn = new TableColumn<>("Status");
+        // Remove the local declaration of statusColumn
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        bookTable.getColumns().add(statusColumn);
 
         // Load book data from JSON file
         loadBookDataFromJson();
