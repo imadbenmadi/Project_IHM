@@ -1,25 +1,23 @@
 package project_ihm;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 
 public class Book {
     private final IntegerProperty numeroSerie;
     private final StringProperty titre;
     private final StringProperty nomAuteur;
     private final IntegerProperty exemplairesDisponibles;
+    private final StringProperty status; // New property for book status
 
-    // Constructors
     public Book(int numeroSerie, String titre, String nomAuteur, int exemplairesDisponibles) {
         this.numeroSerie = new SimpleIntegerProperty(numeroSerie);
         this.titre = new SimpleStringProperty(titre);
         this.nomAuteur = new SimpleStringProperty(nomAuteur);
         this.exemplairesDisponibles = new SimpleIntegerProperty(exemplairesDisponibles);
+        this.status = new SimpleStringProperty("Available"); // Default status is "Available"
+
     }
 
-    // Getters for properties
     public int getNumeroSerie() {
         return numeroSerie.get();
     }
@@ -36,7 +34,6 @@ public class Book {
         return exemplairesDisponibles.get();
     }
 
-    // Property accessors
     public IntegerProperty numeroSerieProperty() {
         return numeroSerie;
     }
@@ -51,5 +48,16 @@ public class Book {
 
     public IntegerProperty exemplairesDisponiblesProperty() {
         return exemplairesDisponibles;
+    }
+
+    public void decrementExemplairesDisponibles() {
+        exemplairesDisponibles.set(exemplairesDisponibles.get() - 1);
+    }
+
+    public void setStatus(String status) {
+        this.status.set(status);
+    }
+    public StringProperty getStatus() {
+        return status;
     }
 }
