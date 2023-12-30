@@ -2,9 +2,11 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
 
 <AnchorPane id="AnchorPane" prefHeight="623.0" prefWidth="657.0" style="-fx-background-color: #f0f0f0;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="project_ihm.DashboardControler">
@@ -15,7 +17,17 @@
                 <Image url="@Logo.png" />
             </image>
         </ImageView>
-      <Button layoutX="577.0" layoutY="15.0" mnemonicParsing="false" style="-fx-background-color: red; -fx-font-size: 16px; -fx-font-weight: bold;" text="LogOut" textFill="WHITE" onAction="#handleLogoutButtonAction" fx:id="LogoutBtn" />
-      <Line endX="557.9595336914062" endY="-7.62939453125E-6" layoutX="115.0" layoutY="74.0" startX="-119.00000762939453" startY="-7.62939453125E-6" stroke="#aeaeae" />
+        <Button layoutX="577.0" layoutY="15.0" mnemonicParsing="false" style="-fx-background-color: red; -fx-font-size: 16px; -fx-font-weight: bold;" text="LogOut" textFill="WHITE" onAction="#handleLogoutButtonAction" fx:id="LogoutBtn" />
+        <Line endX="557.9595336914062" endY="-7.62939453125E-6" layoutX="115.0" layoutY="74.0" startX="-119.00000762939453" startY="-7.62939453125E-6" stroke="#aeaeae" />
+
+        <!-- New UI components for functionalities -->
+        <VBox layoutX="50" layoutY="100" spacing="10">
+            <Button text="Add Book" onAction="#handleAddBook"/>
+            <Button text="Delete Book" onAction="#handleDeleteBook"/>
+            <Button text="Modify Book" onAction="#handleModifyBook"/>
+            <Button text="Accept Book Rent Request" onAction="#handleAcceptRentRequest"/>
+            <TextField fx:id="searchTextField" promptText="Search by Title"/>
+            <Button text="Search" onAction="#handleSearchBook"/>
+        </VBox>
     </children>
 </AnchorPane>
