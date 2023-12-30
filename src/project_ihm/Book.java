@@ -15,7 +15,6 @@ public class Book {
         this.nomAuteur = new SimpleStringProperty(nomAuteur);
         this.exemplairesDisponibles = new SimpleIntegerProperty(exemplairesDisponibles);
         this.status = new SimpleStringProperty("Available"); // Default status is "Available"
-
     }
 
     public int getNumeroSerie() {
@@ -26,12 +25,24 @@ public class Book {
         return titre.get();
     }
 
+    public void setTitre(String text) {
+        this.titre.set(text);
+    }
+
     public String getNomAuteur() {
         return nomAuteur.get();
     }
 
+    public void setNomAuteur(String text) {
+        this.nomAuteur.set(text);
+    }
+
     public int getExemplairesDisponibles() {
         return exemplairesDisponibles.get();
+    }
+
+    public void setExemplairesDisponibles(int exemplairesDisponibles) {
+        this.exemplairesDisponibles.set(exemplairesDisponibles);
     }
 
     public IntegerProperty numeroSerieProperty() {
@@ -57,6 +68,7 @@ public class Book {
     public void setStatus(String status) {
         this.status.set(status);
     }
+
     public StringProperty getStatus() {
         return status;
     }
