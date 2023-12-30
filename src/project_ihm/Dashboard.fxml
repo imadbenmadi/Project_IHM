@@ -26,14 +26,16 @@
         <!-- New UI components for functionalities -->
         <VBox layoutX="50" layoutY="100" spacing="10">
             <!-- Add Book Form -->
-            <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Add New Book" />
+            <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Add New Book to the Libarry " />
             <TextField fx:id="addTitleField" promptText="Title"/>
             <TextField fx:id="addAuthorField" promptText="Author"/>
+            <TextField fx:id="addExemplairesField" promptText="Exemplaires" />
+
             <Button text="Add Book" onAction="#handleAddBook"/>
 
             <!-- Book Table -->
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Books in Database" />
-            <TableView fx:id="booksTable" prefWidth="400">
+            <TableView fx:id="booksTable" prefWidth="600">
             </TableView>
         </VBox>
     </children>

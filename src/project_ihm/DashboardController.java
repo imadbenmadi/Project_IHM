@@ -18,6 +18,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.w3c.dom.ls.LSOutput;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +35,8 @@ public class DashboardController {
 
     @FXML
     private TableView<Book> booksTable;
-
+    @FXML
+    private TextField addExemplairesField;
     private ObjectMapper objectMapper = new ObjectMapper();
     private File jsonFile = new File("DataBase.json");
     private ObjectNode data;
@@ -57,6 +59,7 @@ public class DashboardController {
     private void handleAddBook() {
         String newTitle = addTitleField.getText();
         String newAuthor = addAuthorField.getText();
+        int exemplaires = Integer.parseInt(addExemplairesField.getText());
 
         if (!newTitle.isEmpty() && !newAuthor.isEmpty()) {
             // Add the new book to the 'livres' array
@@ -65,7 +68,7 @@ public class DashboardController {
             newBook.put("numeroSerie", getNextBookSerialNumber());
             newBook.put("titre", newTitle);
             newBook.put("nomAuteur", newAuthor);
-            newBook.put("exemplairesDisponibles", 1);
+            newBook.put("exemplairesDisponibles", exemplaires); // Use the value from the TextField
             livres.add(newBook);
 
             // Save the changes to the JSON file
@@ -74,11 +77,14 @@ public class DashboardController {
             // Clear the input fields
             addTitleField.clear();
             addAuthorField.clear();
+            addExemplairesField.clear(); // Clear the exemplaires field
 
             // Refresh the books table
             loadBooks();
         }
     }
+
+
 
     private int getNextBookSerialNumber() {
         // Determine the next available book serial number
@@ -127,15 +133,19 @@ public class DashboardController {
         // Set up the columns
         TableColumn<Book, Integer> numeroSerieColumn = new TableColumn<>("Numero Serie");
         numeroSerieColumn.setCellValueFactory(new PropertyValueFactory<>("numeroSerie"));
+        numeroSerieColumn.setPrefWidth(100);  // Set the preferred width
 
         TableColumn<Book, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
+        titleColumn.setPrefWidth(100);  // Set the preferred width
 
         TableColumn<Book, String> authorColumn = new TableColumn<>("Author");
         authorColumn.setCellValueFactory(new PropertyValueFactory<>("nomAuteur"));
+        authorColumn.setPrefWidth(150);  // Set the preferred width
 
         TableColumn<Book, Integer> exemplairesDisponiblesColumn = new TableColumn<>("Exemplaires Disponibles");
         exemplairesDisponiblesColumn.setCellValueFactory(new PropertyValueFactory<>("exemplairesDisponibles"));
+        exemplairesDisponiblesColumn.setPrefWidth(100);  // Set the preferred width
 
         TableColumn<Book, Void> actionColumn = new TableColumn<>("Actions");
         actionColumn.setCellFactory(param -> new TableCell<>() {
@@ -143,6 +153,12 @@ public class DashboardController {
             private final Button modifyButton = new Button("Modify");
 
             {
+                // Set the background color of the Delete button to red
+                deleteButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white;");
+
+                // Set the background color of the Modify button to another color (e.g., blue)
+                modifyButton.setStyle("-fx-background-color: #6495ED; -fx-text-fill: white;");
+
                 deleteButton.setOnAction(event -> {
                     Book book = getTableView().getItems().get(getIndex());
                     handleDeleteBook(book.getTitre());
@@ -174,6 +190,7 @@ public class DashboardController {
         // Add columns to the table
         booksTable.getColumns().addAll(numeroSerieColumn, titleColumn, authorColumn, exemplairesDisponiblesColumn, actionColumn);
     }
+
 
     private void handleDeleteBook(String title) {
         ArrayNode livres = (ArrayNode) data.get("livres");
@@ -212,36 +229,23 @@ public class DashboardController {
     }
 
     public void updateBookInTable(Book updatedBook) {
-        // Iterate through the items in the ObservableList
-        for (int i = 0; i < booksList.size(); i++) {
-            Book book = booksList.get(i);
-
-            // Check if the book matches the one that was updated
-            if (book.getNumeroSerie() == updatedBook.getNumeroSerie()) {
-                // Update the specific item in the ObservableList
-                booksList.set(i, updatedBook);
-
-                // Refresh only the updated row in the table
-                refreshTableRow(i);
-
-                // Show success message
-                showSuccessMessage("Book changed successfully!");
-
-                break;
-            }
-        }
+        clearAndInitializeTable();
     }
 
-    private void refreshTableRow(int rowIndex) {
-        // Refresh only the specified row in the table
-        Platform.runLater(() -> {
-            // Clear the selection to avoid issues with refreshing
-            booksTable.getSelectionModel().clearSelection();
+    private void clearAndInitializeTable() {
+        // Clear the entire content of the table
+        booksList.clear();
+        loadBooks();
+        booksList.forEach(System.out::println);
 
-            // Select the row to refresh it
-            booksTable.getSelectionModel().select(rowIndex);
-        });
+        // Clear existing columns from the table
+        booksTable.getColumns().clear();
+
+        // Reinitialize the table
+        setupTable();
+        showSuccessMessage("Updated Successfully ");
     }
+
 
     private void showSuccessMessage(String message) {
         // Create a label to show the success message

@@ -22,6 +22,8 @@ public class ModifyBookController {
 
     @FXML
     private Button saveButton;
+    @FXML
+    private TextField addExemplairesField; // Add @FXML annotation here
 
     private Book bookToModify;
 
@@ -46,23 +48,35 @@ public class ModifyBookController {
         authorField.setText(book.getNomAuteur());
     }
 
+
     @FXML
     private void handleSaveButton() {
         if (bookToModify != null) {
-            // Update the book with the modified values
-            bookToModify.setTitre(titleField.getText());
-            bookToModify.setNomAuteur(authorField.getText());
+            try {
+                // Validate exemplaires field
+                int exemplaires = Integer.parseInt(addExemplairesField.getText());
 
-            // Update the data in the JSON file
-            updateDataInJsonFile();
+                // Update the book with the modified values
+                bookToModify.setTitre(titleField.getText());
+                bookToModify.setNomAuteur(authorField.getText());
+                bookToModify.setExemplairesDisponibles(exemplaires);
 
-            // Manually refresh the table in DashboardController by updating the modified book
-            dashboardController.updateBookInTable(bookToModify);
+                // Update the data in the JSON file
+                updateDataInJsonFile();
 
-            // Close the dialog
-            closeDialog();
+                // Manually refresh the table in DashboardController by updating the modified book
+                dashboardController.updateBookInTable(bookToModify);
+
+                // Close the dialog
+                closeDialog();
+            } catch (NumberFormatException e) {
+                // Handle invalid exemplaires input (non-numeric)
+                e.printStackTrace();
+            }
         }
     }
+
+
 
 
 
@@ -78,7 +92,6 @@ public class ModifyBookController {
     }
 
     private void updateDataInJsonFile() {
-        // Update the data in the JSON file using Jackson
         try {
             // Read the existing data from the file
             ObjectNode jsonData = (ObjectNode) objectMapper.readTree(jsonFile);
@@ -89,6 +102,7 @@ public class ModifyBookController {
                 if (jsonBook.get("numeroSerie").asInt() == bookToModify.getNumeroSerie()) {
                     ((ObjectNode) jsonBook).put("titre", bookToModify.getTitre());
                     ((ObjectNode) jsonBook).put("nomAuteur", bookToModify.getNomAuteur());
+                    ((ObjectNode) jsonBook).put("exemplairesDisponibles", bookToModify.getExemplairesDisponibles());
                     break;
                 }
             }
@@ -99,4 +113,5 @@ public class ModifyBookController {
             e.printStackTrace();
         }
     }
+
 }

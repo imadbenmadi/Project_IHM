@@ -69,7 +69,7 @@ public class Book {
         this.status.set(status);
     }
 
-    public StringProperty getStatus() {
+    public StringProperty statusProperty() {
         return status;
     }
 }
