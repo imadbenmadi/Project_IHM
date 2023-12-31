@@ -1,5 +1,5 @@
 package project_ihm;
-
+import javafx.beans.property.SimpleStringProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -16,10 +16,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.w3c.dom.ls.LSOutput;
-
+import project_ihm.Etudiant;
 import java.io.File;
 import java.io.IOException;
 
@@ -32,16 +33,20 @@ public class DashboardController {
 
     @FXML
     private TextField addAuthorField;
+    @FXML
+    private TextField addExemplairesField;
 
     @FXML
     private TableView<Book> booksTable;
-    @FXML
-    private TextField addExemplairesField;
+
     private ObjectMapper objectMapper = new ObjectMapper();
     private File jsonFile = new File("DataBase.json");
     private ObjectNode data;
-
     private ObservableList<Book> booksList = FXCollections.observableArrayList();
+    @FXML
+    private TableView<Request> requestsTable;
+
+    private ObservableList<Request> requestsList = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
@@ -50,13 +55,114 @@ public class DashboardController {
             data = (ObjectNode) objectMapper.readTree(jsonFile);
             loadBooks();
             setupTable();
+            loadRequests();
+            setupRequestsTable();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+    private void loadRequests() {
+        ArrayNode reqEmprunts = (ArrayNode) data.get("ReqEmprunts");
+
+        ObservableList<Request> updatedRequestsList = FXCollections.observableArrayList();
+
+        for (JsonNode request : reqEmprunts) {
+            int numeroEmprunt = request.get("numeroEmprunt").asInt();
+            int duree = request.get("duree").asInt();
+            JsonNode etudiantNode = request.get("etudiant");
+            int numeroEtudiant = etudiantNode.get("numeroEtudiant").asInt();
+            String nomEtudiant = etudiantNode.get("nom").asText();
+            String prenomEtudiant = etudiantNode.get("prenom").asText();
+            JsonNode livreNode = request.get("livre");
+            int numeroSerieLivre = livreNode.get("numeroSerie").asInt();
+            String titreLivre = livreNode.get("titre").asText();
+
+            updatedRequestsList.add(new Request(numeroEmprunt, duree,
+                    new Etudiant(numeroEtudiant, nomEtudiant, prenomEtudiant),
+                    new Book(numeroSerieLivre, titreLivre,"",0)));
+        }
+
+        requestsList.setAll(updatedRequestsList);
+    }
+
+    private void setupRequestsTable() {
+        TableColumn<Request, Integer> numeroEmpruntColumn = new TableColumn<>("Numero Emprunt");
+        numeroEmpruntColumn.setCellValueFactory(new PropertyValueFactory<>("numeroEmprunt"));
+        numeroEmpruntColumn.setPrefWidth(120);
+
+        TableColumn<Request, Integer> dureeColumn = new TableColumn<>("Duree");
+        dureeColumn.setCellValueFactory(new PropertyValueFactory<>("duree"));
+        dureeColumn.setPrefWidth(80);
+
+        TableColumn<Request, String> etudiantColumn = new TableColumn<>("Etudiant");
+        etudiantColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getEtudiant().getFullName()));
+        etudiantColumn.setPrefWidth(200);
+
+        TableColumn<Request, String> livreColumn = new TableColumn<>("Livre");
+        livreColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getLivre().getTitre()));
+        livreColumn.setPrefWidth(200);
+
+        TableColumn<Request, Void> actionColumn = new TableColumn<>("Actions");
+        actionColumn.setCellFactory(param -> new TableCell<>() {
+            private final Button acceptButton = new Button("Accept");
+
+            {
+                acceptButton.setStyle("-fx-background-color: #32CD32; -fx-text-fill: white;");
+                acceptButton.setOnAction(event -> {
+                    Request request = getTableView().getItems().get(getIndex());
+                    handleAcceptRequest(request);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(acceptButton);
+                }
+            }
+        });
+
+        requestsTable.setItems(requestsList);
+        requestsTable.getColumns().addAll(numeroEmpruntColumn, dureeColumn, etudiantColumn, livreColumn, actionColumn);
+    }
+
+    private void handleAcceptRequest(Request request) {
+        // Perform actions when the admin accepts the request
+        // For example, remove from requests and add to emprunts in the database
+        // ...
+
+        // Remove the accepted request from the list
+        requestsList.remove(request);
+
+        // Then, refresh the requests table
+        requestsTable.refresh();
+    }
+    public void openAddBookWindow() {
+        Stage addBookStage = new Stage();
+
+        Label titleLabel = new Label("Add New Book to the Library");
+        Button addBookButton = new Button("Add Book");
+
+        // Set up the layout for the add book window
+        VBox addBookLayout = new VBox(10, titleLabel, addTitleField, addAuthorField, addExemplairesField, addBookButton);
+        addBookLayout.setStyle("-fx-border-color: black; -fx-padding: 10px; -fx-border-radius: 10px;");
+
+        // Set up the scene and show the window
+        Scene addBookScene = new Scene(addBookLayout, 300, 250);
+        addBookStage.setTitle("Add Book Window");
+        addBookStage.setScene(addBookScene);
+        addBookStage.show();
+
+        // Set up the event handler for the "Add Book" button
+        addBookButton.setOnAction(e -> handleAddBook(addBookStage));
+    }
 
     @FXML
-    private void handleAddBook() {
+    private void handleAddBook(Stage addBookStage) {
         String newTitle = addTitleField.getText();
         String newAuthor = addAuthorField.getText();
         int exemplaires = Integer.parseInt(addExemplairesField.getText());
@@ -81,6 +187,9 @@ public class DashboardController {
 
             // Refresh the books table
             loadBooks();
+
+            // Close the add book window after adding the book
+            addBookStage.close();
         }
     }
 
