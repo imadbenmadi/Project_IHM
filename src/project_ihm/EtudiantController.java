@@ -7,11 +7,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.control.TextFormatter;
 
@@ -50,6 +52,7 @@ public class EtudiantController {
 
     private List<Book> bookList = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
+    public List<Rental> reqEmpruntsList = new ArrayList<>();
 
     @FXML
     private void initialize() {
@@ -61,7 +64,6 @@ public class EtudiantController {
         showLogin();
         ((Stage) LogoutBtn.getScene().getWindow()).close();
     }
-
     public void showLogin() {
         try {
             FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("Login.fxml"));
@@ -74,7 +76,6 @@ public class EtudiantController {
             e.printStackTrace();
         }
     }
-
     private void initializeBookTable() {
         numeroSerieColumn.setCellValueFactory(new PropertyValueFactory<>("numeroSerie"));
         titreColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
@@ -123,7 +124,6 @@ public class EtudiantController {
             e.printStackTrace();
         }
     }
-    public List<Rental> reqEmpruntsList = new ArrayList<>();
     public List<Rental> getReqEmpruntsList() {
         return reqEmpruntsList;
     }
@@ -141,19 +141,33 @@ public class EtudiantController {
                 reqEmpruntNode.put("numeroEmprunt", rental.getNumeroEmprunt());
                 reqEmpruntNode.put("duree", rental.getDuration());
 
-                ObjectNode etudiantNode = objectMapper.createObjectNode();
-                etudiantNode.put("numeroEtudiant", rental.getEtudiant().getNumeroEtudiant());
-                etudiantNode.put("nom", rental.getEtudiant().getNom());
-                etudiantNode.put("prenom", rental.getEtudiant().getPrenom());
-                reqEmpruntNode.set("etudiant", etudiantNode);
+                // Serialize Etudiant details
+                Etudiant etudiant = rental.getEtudiant();
+                if (etudiant != null) { // Add null check
+                    ObjectNode etudiantNode = objectMapper.createObjectNode();
+                    etudiantNode.put("numeroEtudiant", etudiant.getNumeroEtudiant());
+                    etudiantNode.put("nom", etudiant.getNom());
+                    etudiantNode.put("prenom", etudiant.getPrenom());
+                    etudiantNode.put("fullName", etudiant.getFullName()); // Serialize full name
+                    reqEmpruntNode.set("etudiant", etudiantNode);
+                } else {
+                    System.out.println("Etudiant object is null for rental: " + rental.getNumeroEmprunt());
+                }
 
-                ObjectNode livreNode = objectMapper.createObjectNode();
-                livreNode.put("numeroSerie", rental.getBook().getNumeroSerie());
-                livreNode.put("titre", rental.getBook().getTitre());
-                reqEmpruntNode.set("livre", livreNode);
+                // Serialize Book details
+                Book book = rental.getBook();
+                if (book != null) { // Add null check
+                    ObjectNode livreNode = objectMapper.createObjectNode();
+                    livreNode.put("numeroSerie", book.getNumeroSerie());
+                    livreNode.put("titre", book.getTitre());
+                    reqEmpruntNode.set("livre", livreNode);
+                } else {
+                    System.out.println("Book object is null for rental: " + rental.getNumeroEmprunt());
+                }
 
                 reqEmpruntsNode.add(reqEmpruntNode);
             }
+
 
             // Write the updated JSON back to the file
             objectMapper.writeValue(jsonFile, rootNode);
@@ -162,6 +176,8 @@ public class EtudiantController {
             e.printStackTrace();
         }
     }
+
+
     private void handleRentBook(Book selectedBook) {
         if (selectedBook != null && selectedBook.getExemplairesDisponibles() > 0) {
             TextInputDialog dialog = new TextInputDialog();
@@ -207,21 +223,64 @@ public class EtudiantController {
                             }
                         });
 
+                        // Remove the selected book from the bookTable
+                        bookTable.getItems().remove(selectedBook);
+
                         // Store data after making changes
                         storeData();
-
+                        showSuccessMessage("You Request to Rent The Book Have Been Sent Successfully");
                     } else {
-                        System.out.println("Invalid duration. Please enter a positive integer.");
+                        showFaillerMessage("Invalid duration. Please enter a positive integer.");
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid input. Please enter a valid number.");
+                    showFaillerMessage("Invalid input. Please enter a valid number.");
                 }
             });
         } else {
-            System.out.println("Selected book is not available for rental.");
+            showFaillerMessage("Selected book is not available for rental.");
         }
     }
 
+    private void showSuccessMessage(String message) {
+        // Create a label to show the success message
+        Label successLabel = new Label(message);
+        successLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+
+        // Create a new stage for the success message
+        Stage successStage = new Stage();
+        successStage.initModality(Modality.APPLICATION_MODAL);
+        successStage.setTitle("Success");
+
+        // Set the content of the stage
+        successStage.setScene(new Scene(new Group(successLabel), 500, 100));
+
+        // Set the position of the stage (adjust as needed)
+        successStage.setX(500);
+        successStage.setY(300);
+
+        // Show the success message
+        successStage.show();
+    }
+    private void showFaillerMessage(String message) {
+        // Create a label to show the success message
+        Label successLabel = new Label(message);
+        successLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+
+        // Create a new stage for the success message
+        Stage successStage = new Stage();
+        successStage.initModality(Modality.APPLICATION_MODAL);
+        successStage.setTitle("Failler");
+
+        // Set the content of the stage
+        successStage.setScene(new Scene(new Group(successLabel), 500, 100));
+
+        // Set the position of the stage (adjust as needed)
+        successStage.setX(500);
+        successStage.setY(300);
+
+        // Show the success message
+        successStage.show();
+    }
     // New method to create a status label
     private Node createStatusLabel(String status) {
         Label statusLabel = new Label(status);

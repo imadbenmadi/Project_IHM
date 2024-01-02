@@ -1,4 +1,6 @@
 package project_ihm;
+import java.util.Iterator;
+
 import javafx.beans.property.SimpleStringProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -87,37 +89,50 @@ public class DashboardController {
         for (JsonNode request : reqEmprunts) {
             int numeroEmprunt = request.get("numeroEmprunt").asInt();
             int duree = request.get("duree").asInt();
+
             JsonNode etudiantNode = request.get("etudiant");
-            int numeroEtudiant = etudiantNode.get("numeroEtudiant").asInt();
-            String nomEtudiant = etudiantNode.get("nom").asText();
-            String prenomEtudiant = etudiantNode.get("prenom").asText();
+            int numeroEtudiant;
+            String nomEtudiant;
+            String prenomEtudiant;
+            if (etudiantNode != null) {
+                numeroEtudiant = etudiantNode.get("numeroEtudiant").asInt();
+                nomEtudiant = etudiantNode.get("nom").asText();
+                prenomEtudiant = etudiantNode.get("prenom").asText();
+            } else {
+                // Handle the case where "etudiant" is not present
+                numeroEtudiant = 0; // or some default value
+                nomEtudiant = "";
+                prenomEtudiant = "";
+            }
+
             JsonNode livreNode = request.get("livre");
             int numeroSerieLivre = livreNode.get("numeroSerie").asInt();
             String titreLivre = livreNode.get("titre").asText();
 
             updatedRequestsList.add(new Request(numeroEmprunt, duree,
                     new Etudiant(numeroEtudiant, nomEtudiant, prenomEtudiant),
-                    new Book(numeroSerieLivre, titreLivre,"",0)));
+                    new Book(numeroSerieLivre, titreLivre, "", 0)));
         }
 
         requestsList.setAll(updatedRequestsList);
     }
+
     private void setupRequestsTable() {
-        TableColumn<Request, Integer> numeroEmpruntColumn = new TableColumn<>("Numero Emprunt");
+        TableColumn<Request, Integer> numeroEmpruntColumn = new TableColumn<>("id");
         numeroEmpruntColumn.setCellValueFactory(new PropertyValueFactory<>("numeroEmprunt"));
-        numeroEmpruntColumn.setPrefWidth(120);
+        numeroEmpruntColumn.setPrefWidth(50);
 
         TableColumn<Request, Integer> dureeColumn = new TableColumn<>("Duree");
         dureeColumn.setCellValueFactory(new PropertyValueFactory<>("duree"));
-        dureeColumn.setPrefWidth(80);
+        dureeColumn.setPrefWidth(50);
 
         TableColumn<Request, String> etudiantColumn = new TableColumn<>("Etudiant");
-        etudiantColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getEtudiant().getFullName()));
-        etudiantColumn.setPrefWidth(200);
+        etudiantColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getEtudiantFullName()));
+        etudiantColumn.setPrefWidth(0);
 
         TableColumn<Request, String> livreColumn = new TableColumn<>("Livre");
         livreColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getLivre().getTitre()));
-        livreColumn.setPrefWidth(200);
+        livreColumn.setPrefWidth(100);
 
         TableColumn<Request, Void> actionColumn = new TableColumn<>("Actions");
         actionColumn.setCellFactory(param -> new TableCell<>() {
@@ -160,11 +175,9 @@ public class DashboardController {
         TableColumn<CurrentRent, String> bookTitleColumn = new TableColumn<>("Book Title");
         bookTitleColumn.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
 
-        TableColumn<CurrentRent, Void> deleteColumn = new TableColumn<>("Actions");
-        deleteColumn.setCellFactory(param -> new DeleteButtonCell());
 
         // Add columns to the table
-        rentsTable1.getColumns().addAll(rentIdColumn, durationColumn, studentNameColumn, bookTitleColumn, deleteColumn);
+        rentsTable1.getColumns().addAll(rentIdColumn, durationColumn, studentNameColumn, bookTitleColumn);
 
         // Populate the table with data
         loadCurrentRents();
@@ -190,48 +203,62 @@ public class DashboardController {
 
         rentsTable1.setItems(currentRentsList);
     }
-    private class DeleteButtonCell extends TableCell<CurrentRent, Void> {
-        private final Button deleteButton = new Button("Delete");
 
-        DeleteButtonCell() {
-            deleteButton.setOnAction(event -> handleDeleteRent());
-        }
 
-        @Override
-        protected void updateItem(Void item, boolean empty) {
-            super.updateItem(item, empty);
 
-            if (empty) {
-                setGraphic(null);
-            } else {
-                setGraphic(deleteButton);
-            }
-        }
-    }
-
-    private void handleDeleteRent() {
-        // Get the selected rent from the table
-        CurrentRent selectedRent = (CurrentRent) rentsTable1.getSelectionModel().getSelectedItem();
-
-        if (selectedRent != null) {
-            // Implement your logic to delete the rent from the database
-            // ...
-
-            // Refresh the table after deletion
-            loadCurrentRents();
-        }
-    }
     private void handleAcceptRequest(Request request) {
-        // Perform actions when the admin accepts the request
-        // For example, remove from requests and add to emprunts in the database
-        // ...
-
         // Remove the accepted request from the list
         requestsList.remove(request);
 
-        // Then, refresh the requests table
+        // Update the requests table
         requestsTable.refresh();
+
+        // Perform actions when the admin accepts the request
+        // For example, remove from ReqEmprunts and add to emprunts in the database
+        try {
+            // Load data from Database.json
+            File jsonFile = new File("Database.json");
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(jsonFile);
+
+            // Remove the accepted request from ReqEmprunts field
+            ArrayNode reqEmpruntsNode = (ArrayNode) rootNode.path("ReqEmprunts");
+            Iterator<JsonNode> reqEmpruntsIterator = reqEmpruntsNode.iterator();
+            while (reqEmpruntsIterator.hasNext()) {
+                JsonNode node = reqEmpruntsIterator.next();
+                if (node.get("numeroEmprunt").asInt() == request.getNumeroEmprunt()) {
+                    reqEmpruntsIterator.remove();
+                    break;
+                }
+            }
+
+            // Add the accepted request to emprunts field
+            ArrayNode empruntsNode = (ArrayNode) rootNode.path("emprunts");
+            ObjectNode empruntNode = objectMapper.createObjectNode();
+            empruntNode.put("numeroEmprunt", request.getNumeroEmprunt());
+            empruntNode.put("duree", request.getDuree());
+
+            ObjectNode etudiantNode = objectMapper.createObjectNode();
+            etudiantNode.put("numeroEtudiant", request.getEtudiant().getNumeroEtudiant());
+            etudiantNode.put("nom", request.getEtudiant().getNom());
+            etudiantNode.put("prenom", request.getEtudiant().getPrenom());
+            empruntNode.set("etudiant", etudiantNode);
+
+            ObjectNode livreNode = objectMapper.createObjectNode();
+            livreNode.put("numeroSerie", request.getLivre().getNumeroSerie());
+            livreNode.put("titre", request.getLivre().getTitre());
+            empruntNode.set("livre", livreNode);
+
+            empruntsNode.add(empruntNode);
+
+            // Write the updated JSON back to the file
+            objectMapper.writeValue(jsonFile, rootNode);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+
     public void openAddBookWindow() {
 
         // Create the VBox with the content from AddBookWindow.fxml

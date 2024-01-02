@@ -17,7 +17,9 @@ public class Request {
         this.etudiant = new SimpleObjectProperty<>(etudiant);
         this.livre = new SimpleObjectProperty<>(livre);
     }
-
+    public String getEtudiantFullName() {
+        return etudiant.get().getNom() + " " + etudiant.get().getPrenom();
+    }
     public int getNumeroEmprunt() {
         return numeroEmprunt.get();
     }
