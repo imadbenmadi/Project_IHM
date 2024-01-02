@@ -4,6 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.util.converter.IntegerStringConverter;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,18 +31,27 @@ import java.io.IOException;
 
 public class DashboardController {
     @FXML
+    public Button SearchBtn;
+    @FXML
+    public TableView rentsTable1;
+    @FXML
+    private TableView<CurrentRent> rentsTable;
+    @FXML
     private Button LogoutBtn;
 
     @FXML
-    private TextField addTitleField;
-
+    public TextField addTitleField;
     @FXML
-    private TextField addAuthorField;
+    public TextField addAuthorField;
     @FXML
-    private TextField addExemplairesField;
+    public TextField addExemplairesField;
 
     @FXML
     private TableView<Book> booksTable;
+    @FXML
+    private VBox rentsVBox;
+    @FXML
+    private Label currentRentsLabel;
 
     private ObjectMapper objectMapper = new ObjectMapper();
     private File jsonFile = new File("DataBase.json");
@@ -45,6 +59,8 @@ public class DashboardController {
     private ObservableList<Book> booksList = FXCollections.observableArrayList();
     @FXML
     private TableView<Request> requestsTable;
+    @FXML
+    private Button addBookButton;
 
     private ObservableList<Request> requestsList = FXCollections.observableArrayList();
 
@@ -57,6 +73,7 @@ public class DashboardController {
             setupTable();
             loadRequests();
             setupRequestsTable();
+            setup_Current_Rents_Table();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,7 +101,6 @@ public class DashboardController {
 
         requestsList.setAll(updatedRequestsList);
     }
-
     private void setupRequestsTable() {
         TableColumn<Request, Integer> numeroEmpruntColumn = new TableColumn<>("Numero Emprunt");
         numeroEmpruntColumn.setCellValueFactory(new PropertyValueFactory<>("numeroEmprunt"));
@@ -129,7 +145,78 @@ public class DashboardController {
         requestsTable.setItems(requestsList);
         requestsTable.getColumns().addAll(numeroEmpruntColumn, dureeColumn, etudiantColumn, livreColumn, actionColumn);
     }
+    private void setup_Current_Rents_Table() {
+        // Set up columns
+        TableColumn<CurrentRent, Integer> rentIdColumn = new TableColumn<>("Rent ID");
+        rentIdColumn.setCellValueFactory(new PropertyValueFactory<>("rentId"));
 
+        TableColumn<CurrentRent, Integer> durationColumn = new TableColumn<>("Duration");
+        durationColumn.setCellValueFactory(new PropertyValueFactory<>("duration"));
+
+        TableColumn<CurrentRent, String> studentNameColumn = new TableColumn<>("Student Name");
+        studentNameColumn.setCellValueFactory(new PropertyValueFactory<>("studentName"));
+
+        TableColumn<CurrentRent, String> bookTitleColumn = new TableColumn<>("Book Title");
+        bookTitleColumn.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
+
+        TableColumn<CurrentRent, Void> deleteColumn = new TableColumn<>("Actions");
+        deleteColumn.setCellFactory(param -> new DeleteButtonCell());
+
+        // Add columns to the table
+        rentsTable1.getColumns().addAll(rentIdColumn, durationColumn, studentNameColumn, bookTitleColumn, deleteColumn);
+
+        // Populate the table with data
+        loadCurrentRents();
+
+        rentsTable1.setEditable(true);
+    }
+    private void loadCurrentRents() {
+        ArrayNode emprunts = (ArrayNode) data.get("emprunts");
+
+        ObservableList<CurrentRent> currentRentsList = FXCollections.observableArrayList();
+
+        for (JsonNode emprunt : emprunts) {
+            int rentId = emprunt.get("numeroEmprunt").asInt();
+            int duration = emprunt.get("duree").asInt();
+            JsonNode etudiantNode = emprunt.get("etudiant");
+            String studentName = etudiantNode.get("nom").asText() + " " + etudiantNode.get("prenom").asText();
+            JsonNode livreNode = emprunt.get("livre");
+            String bookTitle = livreNode.get("titre").asText();
+
+            currentRentsList.add(new CurrentRent(rentId, duration, studentName, bookTitle));
+        }
+
+        rentsTable1.setItems(currentRentsList);
+    }
+    private class DeleteButtonCell extends TableCell<CurrentRent, Void> {
+        private final Button deleteButton = new Button("Delete");
+
+        DeleteButtonCell() {
+            deleteButton.setOnAction(event -> handleDeleteRent());
+        }
+
+        @Override
+        protected void updateItem(Void item, boolean empty) {
+            super.updateItem(item, empty);
+
+            if (empty) {
+                setGraphic(null);
+            } else {
+                setGraphic(deleteButton);
+            }
+        }
+    }
+    private void handleDeleteRent() {
+        // Handle the deletion of the selected rent
+        // You need to implement this based on your data structure
+        rentsTable.getColumns().addAll(rentIdColumn, durationColumn, studentNameColumn, bookTitleColumn, deleteColumn);
+        //... Delete the rent from the database
+
+        // Refresh the table
+        loadCurrentRents();
+        rentsTable.setEditable(true);  // Use the correct TableView instance
+
+    }
     private void handleAcceptRequest(Request request) {
         // Perform actions when the admin accepts the request
         // For example, remove from requests and add to emprunts in the database
@@ -142,30 +229,34 @@ public class DashboardController {
         requestsTable.refresh();
     }
     public void openAddBookWindow() {
-        Stage addBookStage = new Stage();
 
+        // Create the VBox with the content from AddBookWindow.fxml
+        VBox addBookLayout = new VBox();
         Label titleLabel = new Label("Add New Book to the Library");
+         addTitleField = new TextField();
+         addAuthorField = new TextField();
+         addExemplairesField = new TextField();
         Button addBookButton = new Button("Add Book");
 
         // Set up the layout for the add book window
-        VBox addBookLayout = new VBox(10, titleLabel, addTitleField, addAuthorField, addExemplairesField, addBookButton);
+        addBookLayout.getChildren().addAll(titleLabel, addTitleField, addAuthorField, addExemplairesField, addBookButton);
+        addBookLayout.setSpacing(10);
         addBookLayout.setStyle("-fx-border-color: black; -fx-padding: 10px; -fx-border-radius: 10px;");
 
-        // Set up the scene and show the window
-        Scene addBookScene = new Scene(addBookLayout, 300, 250);
+        Stage addBookStage = new Stage();
+        addBookStage.setScene(new Scene(addBookLayout, 300, 250));
         addBookStage.setTitle("Add Book Window");
-        addBookStage.setScene(addBookScene);
-        addBookStage.show();
 
         // Set up the event handler for the "Add Book" button
-        addBookButton.setOnAction(e -> handleAddBook(addBookStage));
+        addBookButton.setOnAction(event -> handleAddBook(addBookStage));
+        addBookStage.show();
     }
-
     @FXML
-    private void handleAddBook(Stage addBookStage) {
-        String newTitle = addTitleField.getText();
-        String newAuthor = addAuthorField.getText();
-        int exemplaires = Integer.parseInt(addExemplairesField.getText());
+    public void handleAddBook(Stage addBookStage) {
+        String newTitle = this.addTitleField.getText();
+        String newAuthor = this.addAuthorField.getText();
+        int exemplaires = Integer.parseInt(this.addExemplairesField.getText());
+
 
         if (!newTitle.isEmpty() && !newAuthor.isEmpty()) {
             // Add the new book to the 'livres' array
@@ -192,9 +283,6 @@ public class DashboardController {
             addBookStage.close();
         }
     }
-
-
-
     private int getNextBookSerialNumber() {
         // Determine the next available book serial number
         ArrayNode livres = (ArrayNode) data.get("livres");
@@ -209,7 +297,6 @@ public class DashboardController {
 
         return maxSerialNumber + 1;
     }
-
     private void saveDataToJsonFile() {
         // Save the updated data to the JSON file using Jackson
         try {
@@ -218,7 +305,6 @@ public class DashboardController {
             e.printStackTrace();
         }
     }
-
     public void loadBooks() {
         ArrayNode livres = (ArrayNode) data.get("livres");
 
@@ -237,7 +323,6 @@ public class DashboardController {
         // Set the new ObservableList to the existing booksList
         booksList.setAll(updatedBooksList);
     }
-
     private void setupTable() {
         // Set up the columns
         TableColumn<Book, Integer> numeroSerieColumn = new TableColumn<>("Numero Serie");
@@ -299,8 +384,6 @@ public class DashboardController {
         // Add columns to the table
         booksTable.getColumns().addAll(numeroSerieColumn, titleColumn, authorColumn, exemplairesDisponiblesColumn, actionColumn);
     }
-
-
     private void handleDeleteBook(String title) {
         ArrayNode livres = (ArrayNode) data.get("livres");
 
@@ -354,8 +437,6 @@ public class DashboardController {
         setupTable();
         showSuccessMessage("Updated Successfully ");
     }
-
-
     private void showSuccessMessage(String message) {
         // Create a label to show the success message
         Label successLabel = new Label(message);
@@ -376,8 +457,6 @@ public class DashboardController {
         // Show the success message
         successStage.show();
     }
-
-
     public void showLogin() {
         try {
             FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("Login.fxml"));
@@ -390,7 +469,6 @@ public class DashboardController {
             e.printStackTrace();
         }
     }
-
     @FXML
     private void handleLogoutButtonAction(ActionEvent event) {
         showLogin();
