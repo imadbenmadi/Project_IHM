@@ -21,7 +21,7 @@
         <Button fx:id="LogoutBtn" layoutX="577.0" layoutY="15.0" mnemonicParsing="false" onAction="#handleLogoutButtonAction" style="-fx-background-color: red; -fx-font-size: 16px; -fx-font-weight: bold;" text="LogOut" textFill="WHITE" />
         <Line endX="557.9595336914062" endY="-7.62939453125E-6" layoutX="115.0" layoutY="74.0" startX="-119.00000762939453" startY="-7.62939453125E-6" stroke="#aeaeae" />
 
-      <VBox layoutX="349.0" layoutY="85.0" prefHeight="236.0" prefWidth="319.0" style="-fx-border-color: black; -fx-padding: 10px; -fx-border-radius: 10px;">
+      <VBox layoutX="349.0" layoutY="85.0" prefHeight="236.0" prefWidth="319.0" style="-fx-padding: 10px; -fx-border-radius: 10px;">
          <children>
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Requests To Rent" />
             <TableView fx:id="requestsTable" prefHeight="188.0" prefWidth="308.0" />
@@ -35,10 +35,10 @@
       <TextField layoutX="186.0" layoutY="330.0" prefHeight="25.0" prefWidth="169.0" promptText="Search..." />
       <Button fx:id="SearchBtn" layoutX="355.0" layoutY="330.0" mnemonicParsing="false" text="Search" />
       <Button layoutX="577.0" layoutY="330.0" mnemonicParsing="false" onAction="#openAddBookWindow" style="-fx-background-color: lime;" text="Add Book" />
-      <VBox layoutX="6.0" layoutY="85.0" prefHeight="236.0" prefWidth="319.0" style="-fx-border-color: black; -fx-padding: 10px; -fx-border-radius: 10px;">
+      <VBox layoutX="6.0" layoutY="85.0" prefHeight="236.0" prefWidth="319.0" style="-fx-padding: 10px; -fx-border-radius: 10px;">
          <children>
             <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Current Rents" />
-            <TableView fx:id="requestsTable1" prefHeight="188.0" prefWidth="308.0" />
+            <TableView fx:id="rentsTable" prefHeight="188.0" prefWidth="308.0" />
          </children>
       </VBox>
     </children>

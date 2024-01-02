@@ -63,6 +63,7 @@ public class DashboardController {
     private Button addBookButton;
 
     private ObservableList<Request> requestsList = FXCollections.observableArrayList();
+    private ObservableList<CurrentRent> currentRentsList = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
@@ -170,6 +171,7 @@ public class DashboardController {
 
         rentsTable1.setEditable(true);
     }
+
     private void loadCurrentRents() {
         ArrayNode emprunts = (ArrayNode) data.get("emprunts");
 
@@ -206,16 +208,18 @@ public class DashboardController {
             }
         }
     }
+
     private void handleDeleteRent() {
-        // Handle the deletion of the selected rent
-        // You need to implement this based on your data structure
-        rentsTable.getColumns().addAll(rentIdColumn, durationColumn, studentNameColumn, bookTitleColumn, deleteColumn);
-        //... Delete the rent from the database
+        // Get the selected rent from the table
+        CurrentRent selectedRent = (CurrentRent) rentsTable1.getSelectionModel().getSelectedItem();
 
-        // Refresh the table
-        loadCurrentRents();
-        rentsTable.setEditable(true);  // Use the correct TableView instance
+        if (selectedRent != null) {
+            // Implement your logic to delete the rent from the database
+            // ...
 
+            // Refresh the table after deletion
+            loadCurrentRents();
+        }
     }
     private void handleAcceptRequest(Request request) {
         // Perform actions when the admin accepts the request
