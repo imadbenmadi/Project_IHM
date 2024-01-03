@@ -142,18 +142,20 @@ public class EtudiantController {
                 reqEmpruntNode.put("duree", rental.getDuration());
 
                 // Serialize Etudiant details
-                Etudiant etudiant = rental.getEtudiant();
+                String etudiant = rental.getUsername();
+                System.out.println(etudiant);
+                reqEmpruntNode.put("etudiant", etudiant);
+
+                //reqEmpruntNode.set("etudiant", etudiant);
+                /***
                 if (etudiant != null) { // Add null check
                     ObjectNode etudiantNode = objectMapper.createObjectNode();
-                    etudiantNode.put("numeroEtudiant", etudiant.getNumeroEtudiant());
-                    etudiantNode.put("nom", etudiant.getNom());
-                    etudiantNode.put("prenom", etudiant.getPrenom());
-                    etudiantNode.put("fullName", etudiant.getFullName()); // Serialize full name
+                    etudiantNode.put("etudiant", etudiant);
                     reqEmpruntNode.set("etudiant", etudiantNode);
                 } else {
                     System.out.println("Etudiant object is null for rental: " + rental.getNumeroEmprunt());
                 }
-
+                 ***/
                 // Serialize Book details
                 Book book = rental.getBook();
                 if (book != null) { // Add null check
@@ -200,10 +202,12 @@ public class EtudiantController {
                 try {
                     int duration = Integer.parseInt(durationStr);
                     if (duration > 0) {
+                        String username = ApplicationContext.getEtudiantUsername();
                         Rental rental = new Rental();
                         rental.setBook(selectedBook);
                         rental.setDuration(duration);
-
+                        rental.setUsername(username);
+                        System.out.println(username);
                         // Add the rental request to the global reqEmpruntsList
                         getReqEmpruntsList().add(rental);
 

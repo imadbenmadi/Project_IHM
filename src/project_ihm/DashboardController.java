@@ -83,7 +83,6 @@ public class DashboardController {
     }
     private void loadRequests() {
         ArrayNode reqEmprunts = (ArrayNode) data.get("ReqEmprunts");
-
         ObservableList<Request> updatedRequestsList = FXCollections.observableArrayList();
 
         for (JsonNode request : reqEmprunts) {
@@ -91,31 +90,20 @@ public class DashboardController {
             int duree = request.get("duree").asInt();
 
             JsonNode etudiantNode = request.get("etudiant");
-            int numeroEtudiant;
-            String nomEtudiant;
-            String prenomEtudiant;
-            if (etudiantNode != null) {
-                numeroEtudiant = etudiantNode.get("numeroEtudiant").asInt();
-                nomEtudiant = etudiantNode.get("nom").asText();
-                prenomEtudiant = etudiantNode.get("prenom").asText();
-            } else {
-                // Handle the case where "etudiant" is not present
-                numeroEtudiant = 0; // or some default value
-                nomEtudiant = "";
-                prenomEtudiant = "";
-            }
+            String etudiant = etudiantNode != null ? etudiantNode.asText() : "";  // Check for null
 
             JsonNode livreNode = request.get("livre");
             int numeroSerieLivre = livreNode.get("numeroSerie").asInt();
             String titreLivre = livreNode.get("titre").asText();
 
             updatedRequestsList.add(new Request(numeroEmprunt, duree,
-                    new Etudiant(numeroEtudiant, nomEtudiant, prenomEtudiant),
+                    etudiant,
                     new Book(numeroSerieLivre, titreLivre, "", 0)));
         }
 
         requestsList.setAll(updatedRequestsList);
     }
+
 
     private void setupRequestsTable() {
         TableColumn<Request, Integer> numeroEmpruntColumn = new TableColumn<>("id");
@@ -239,9 +227,7 @@ public class DashboardController {
             empruntNode.put("duree", request.getDuree());
 
             ObjectNode etudiantNode = objectMapper.createObjectNode();
-            etudiantNode.put("numeroEtudiant", request.getEtudiant().getNumeroEtudiant());
-            etudiantNode.put("nom", request.getEtudiant().getNom());
-            etudiantNode.put("prenom", request.getEtudiant().getPrenom());
+            etudiantNode.put("numeroEtudiant", request.getEtudiantFullName());
             empruntNode.set("etudiant", etudiantNode);
 
             ObjectNode livreNode = objectMapper.createObjectNode();

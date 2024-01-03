@@ -1,24 +1,21 @@
 package project_ihm;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 
 public class Request {
     private final IntegerProperty numeroEmprunt;
     private final IntegerProperty duree;
-    private final ObjectProperty<Etudiant> etudiant;
+    private final StringProperty etudiant;
     private final ObjectProperty<Book> livre;
 
-    public Request(int numeroEmprunt, int duree, Etudiant etudiant, Book livre) {
+    public Request(int numeroEmprunt, int duree, String etudiant, Book livre) {
         this.numeroEmprunt = new SimpleIntegerProperty(numeroEmprunt);
         this.duree = new SimpleIntegerProperty(duree);
-        this.etudiant = new SimpleObjectProperty<>(etudiant);
+        this.etudiant = new SimpleStringProperty(etudiant);
         this.livre = new SimpleObjectProperty<>(livre);
     }
     public String getEtudiantFullName() {
-        return etudiant.get().getNom() + " " + etudiant.get().getPrenom();
+        return this.etudiant.get();
     }
     public int getNumeroEmprunt() {
         return numeroEmprunt.get();
@@ -28,7 +25,7 @@ public class Request {
         return duree.get();
     }
 
-    public Etudiant getEtudiant() {
+    public String getEtudiant() {
         return etudiant.get();
     }
 

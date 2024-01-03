@@ -5,6 +5,8 @@ public class Rental {
 
     private int numeroEmprunt;
     private Book book;
+    private String Username; // Include a reference to the Etudiant class
+
     private Etudiant etudiant; // Include a reference to the Etudiant class
     private int duration;
 
@@ -38,5 +40,13 @@ public class Rental {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public void setUsername(String username) {
+        this.Username=username;
+    }
+
+    public String getUsername() {
+        return  this.Username;
     }
 }
