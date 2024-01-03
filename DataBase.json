@@ -1,1 +1,25 @@
-{"livres":[{"numeroSerie":4,"titre":"é","nomAuteur":"é","exemplairesDisponibles":6},{"numeroSerie":5,"titre":"qsd","nomAuteur":"qsd","exemplairesDisponibles":1},{"numeroSerie":6,"titre":"imad","nomAuteur":"imad","exemplairesDisponibles":2},{"numeroSerie":7,"titre":"ppp","nomAuteur":"ppp","exemplairesDisponibles":8},{"numeroSerie":8,"titre":"aaaaaaaaaaaaaaa","nomAuteur":"aaaaaaaaaaaaaaa","exemplairesDisponibles":0}],"etudiants":[{"numeroEtudiant":101,"nom":"benmadi","prenom":"imad"},{"numeroEtudiant":102,"nom":"khanfar","prenom":"salah"}],"bibliothecaires":[{"nom":"Dubois","prenom":"Alice","email":"alice.dubois@example.com","motDePasse":"securePass123"}],"emprunts":[{"numeroEmprunt":1,"duree":7,"etudiant":{"numeroEtudiant":101,"nom":"Dupuis","prenom":"Sophie"},"livre":{"numeroSerie":1,"titre":"Introduction à Java"}},{"numeroEmprunt":1,"duree":4,"etudiant":{"numeroEtudiant":"101","nom":"benmadi","prenom":"imad"},"livre":{"numeroSerie":1,"titre":"Introduction à Java"}},{"numeroEmprunt":2,"duree":8,"etudiant":{"numeroEtudiant":0,"nom":"","prenom":""},"livre":{"numeroSerie":4,"titre":"é"}}],"ReqEmprunts":[{"numeroEmprunt":1,"duree":4,"livre":{"numeroSerie":6,"titre":"imad"}},{"numeroEmprunt":1,"duree":4,"etudiant":"benmadi.imad","livre":{"numeroSerie":4,"titre":"é"}},{"numeroEmprunt":1,"duree":4,"etudiant":"benmadi.imad","livre":{"numeroSerie":5,"titre":"qsd"}}]}
+{"livres": [
+  {"numeroSerie": 1, "titre": "Introduction à l'Informatique", "nomAuteur": "Jean Dupont", "exemplairesDisponibles": 8},
+  {"numeroSerie": 2, "titre": "Algorithmes Avancés", "nomAuteur": "Sophie Martin", "exemplairesDisponibles": 12},
+  {"numeroSerie": 3, "titre": "Réseaux et Protocoles", "nomAuteur": "Pierre Lefevre", "exemplairesDisponibles": 5},
+  {"numeroSerie": 4, "titre": "Intelligence Artificielle Appliquée", "nomAuteur": "Claire Dubois", "exemplairesDisponibles": 10},
+  {"numeroSerie": 5, "titre": "Systèmes d'Exploitation Modernes", "nomAuteur": "Lucien Bernard", "exemplairesDisponibles": 15},
+  {"numeroSerie": 6, "titre": "Programmation Web Avancée", "nomAuteur": "Isabelle Moreau", "exemplairesDisponibles": 7},
+  {"numeroSerie": 7, "titre": "Base de Données et Systèmes d'Information", "nomAuteur": "Antoine Dupont", "exemplairesDisponibles": 9},
+  {"numeroSerie": 8, "titre": "Cybersécurité: Principes et Pratiques", "nomAuteur": "Camille Durand", "exemplairesDisponibles": 11},
+  {"numeroSerie": 9, "titre": "Introduction à la Robotique", "nomAuteur": "Juliette Martin", "exemplairesDisponibles": 6},
+  {"numeroSerie": 10, "titre": "Théorie des Langages de Programmation", "nomAuteur": "Vincent Rocher", "exemplairesDisponibles": 14},
+  {"numeroSerie": 11, "titre": "Développement Mobile avec Flutter", "nomAuteur": "Marie Leclerc", "exemplairesDisponibles": 8},
+  {"numeroSerie": 12, "titre": "Blockchain: Concepts et Applications", "nomAuteur": "Paul Rivière", "exemplairesDisponibles": 12},
+  {"numeroSerie": 13, "titre": "Analyse des Données en Sciences", "nomAuteur": "Élise Martin", "exemplairesDisponibles": 5},
+  {"numeroSerie": 14, "titre": "Systèmes Embarqués: Principes et Applications", "nomAuteur": "Louis Dubois", "exemplairesDisponibles": 10},
+  {"numeroSerie": 15, "titre": "Introduction à l'Internet des Objets", "nomAuteur": "Anne Lefevre", "exemplairesDisponibles": 15},
+  {"numeroSerie": 16, "titre": "Ingénierie du Logiciel", "nomAuteur": "Alexandre Bernard", "exemplairesDisponibles": 7},
+  {"numeroSerie": 17, "titre": "Méthodes Formelles en Informatique", "nomAuteur": "Charlotte Durand", "exemplairesDisponibles": 9},
+  {"numeroSerie": 18, "titre": "Éthique de l'Intelligence Artificielle", "nomAuteur": "François Dupont", "exemplairesDisponibles": 11},
+  {"numeroSerie": 19, "titre": "Introduction à la Cryptographie", "nomAuteur": "Catherine Rocher", "exemplairesDisponibles": 6},
+  {"numeroSerie": 20, "titre": "Conception de Systèmes Distribués", "nomAuteur": "David Moreau", "exemplairesDisponibles": 14}
+],"etudiants":[{"numeroEtudiant":101,"nom":"benmadi","prenom":"imad"},{"numeroEtudiant":102,"nom":"khanfar","prenom":"salah"}],
+  "bibliothecaires":[{"nom":"admin","prenom":"admin","email":"admin.admin@gmail.com","motDePasse":"admin"}],
+  "emprunts":[],
+  "ReqEmprunts":[]}

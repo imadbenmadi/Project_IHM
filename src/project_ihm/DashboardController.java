@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.IntegerStringConverter;
@@ -32,8 +34,11 @@ import java.io.File;
 import java.io.IOException;
 
 public class DashboardController {
+    private FilteredList<Book> filteredBooks;
     @FXML
-    public Button SearchBtn;
+    private TextField searchTextField;
+    @FXML
+    private Button searchBtn;
     @FXML
     public TableView rentsTable1;
     @FXML
@@ -77,6 +82,7 @@ public class DashboardController {
             loadRequests();
             setupRequestsTable();
             setup_Current_Rents_Table();
+            setupSearch();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -103,24 +109,22 @@ public class DashboardController {
 
         requestsList.setAll(updatedRequestsList);
     }
-
-
     private void setupRequestsTable() {
         TableColumn<Request, Integer> numeroEmpruntColumn = new TableColumn<>("id");
         numeroEmpruntColumn.setCellValueFactory(new PropertyValueFactory<>("numeroEmprunt"));
-        numeroEmpruntColumn.setPrefWidth(50);
+        numeroEmpruntColumn.setPrefWidth(70);
 
         TableColumn<Request, Integer> dureeColumn = new TableColumn<>("Duree");
         dureeColumn.setCellValueFactory(new PropertyValueFactory<>("duree"));
-        dureeColumn.setPrefWidth(50);
+        dureeColumn.setPrefWidth(70);
 
         TableColumn<Request, String> etudiantColumn = new TableColumn<>("Etudiant");
         etudiantColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getEtudiantFullName()));
-        etudiantColumn.setPrefWidth(0);
+        etudiantColumn.setPrefWidth(180);
 
         TableColumn<Request, String> livreColumn = new TableColumn<>("Livre");
         livreColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getLivre().getTitre()));
-        livreColumn.setPrefWidth(100);
+        livreColumn.setPrefWidth(180);
 
         TableColumn<Request, Void> actionColumn = new TableColumn<>("Actions");
         actionColumn.setCellFactory(param -> new TableCell<>() {
@@ -153,15 +157,21 @@ public class DashboardController {
         // Set up columns
         TableColumn<CurrentRent, Integer> rentIdColumn = new TableColumn<>("Rent ID");
         rentIdColumn.setCellValueFactory(new PropertyValueFactory<>("rentId"));
+        rentIdColumn.setPrefWidth(100);
 
         TableColumn<CurrentRent, Integer> durationColumn = new TableColumn<>("Duration");
         durationColumn.setCellValueFactory(new PropertyValueFactory<>("duration"));
+        durationColumn.setPrefWidth(100);
+
 
         TableColumn<CurrentRent, String> studentNameColumn = new TableColumn<>("Student Name");
         studentNameColumn.setCellValueFactory(new PropertyValueFactory<>("studentName"));
+        studentNameColumn.setPrefWidth(200);
+
 
         TableColumn<CurrentRent, String> bookTitleColumn = new TableColumn<>("Book Title");
         bookTitleColumn.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
+        bookTitleColumn.setPrefWidth(200);
 
 
         // Add columns to the table
@@ -172,7 +182,6 @@ public class DashboardController {
 
         rentsTable1.setEditable(true);
     }
-
     private void loadCurrentRents() {
         ArrayNode emprunts = (ArrayNode) data.get("emprunts");
 
@@ -191,9 +200,6 @@ public class DashboardController {
 
         rentsTable1.setItems(currentRentsList);
     }
-
-
-
     private void handleAcceptRequest(Request request) {
         // Remove the accepted request from the list
         requestsList.remove(request);
@@ -243,8 +249,6 @@ public class DashboardController {
             e.printStackTrace();
         }
     }
-
-
     public void openAddBookWindow() {
 
         // Create the VBox with the content from AddBookWindow.fxml
@@ -341,22 +345,21 @@ public class DashboardController {
         booksList.setAll(updatedBooksList);
     }
     private void setupTable() {
-        // Set up the columns
         TableColumn<Book, Integer> numeroSerieColumn = new TableColumn<>("Numero Serie");
         numeroSerieColumn.setCellValueFactory(new PropertyValueFactory<>("numeroSerie"));
-        numeroSerieColumn.setPrefWidth(100);  // Set the preferred width
+        numeroSerieColumn.setPrefWidth(170);
 
         TableColumn<Book, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
-        titleColumn.setPrefWidth(100);  // Set the preferred width
+        titleColumn.setPrefWidth(350);
 
         TableColumn<Book, String> authorColumn = new TableColumn<>("Author");
         authorColumn.setCellValueFactory(new PropertyValueFactory<>("nomAuteur"));
-        authorColumn.setPrefWidth(150);  // Set the preferred width
+        authorColumn.setPrefWidth(350);
 
         TableColumn<Book, Integer> exemplairesDisponiblesColumn = new TableColumn<>("Exemplaires Disponibles");
         exemplairesDisponiblesColumn.setCellValueFactory(new PropertyValueFactory<>("exemplairesDisponibles"));
-        exemplairesDisponiblesColumn.setPrefWidth(100);  // Set the preferred width
+        exemplairesDisponiblesColumn.setPrefWidth(170);
 
         TableColumn<Book, Void> actionColumn = new TableColumn<>("Actions");
         actionColumn.setCellFactory(param -> new TableCell<>() {
@@ -364,10 +367,7 @@ public class DashboardController {
             private final Button modifyButton = new Button("Modify");
 
             {
-                // Set the background color of the Delete button to red
                 deleteButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white;");
-
-                // Set the background color of the Modify button to another color (e.g., blue)
                 modifyButton.setStyle("-fx-background-color: #6495ED; -fx-text-fill: white;");
 
                 deleteButton.setOnAction(event -> {
@@ -395,11 +395,36 @@ public class DashboardController {
             }
         });
 
-        // Set the items to the table
         booksTable.setItems(booksList);
 
-        // Add columns to the table
+        filteredBooks = new FilteredList<>(booksList, p -> true);
+        SortedList<Book> sortedBooks = new SortedList<>(filteredBooks);
+        sortedBooks.comparatorProperty().bind(booksTable.comparatorProperty());
+
+        booksTable.setItems(sortedBooks);
+
         booksTable.getColumns().addAll(numeroSerieColumn, titleColumn, authorColumn, exemplairesDisponiblesColumn, actionColumn);
+    }
+    private void setupSearch() {
+        searchBtn.setOnAction(event -> searchBooks());
+
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredBooks.setPredicate(book -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+
+                String lowerCaseFilter = newValue.toLowerCase();
+                return book.getTitre().toLowerCase().contains(lowerCaseFilter);
+            });
+        });
+    }
+
+    private void searchBooks() {
+        filteredBooks.setPredicate(book -> {
+            String searchInput = searchTextField.getText().toLowerCase();
+            return book.getTitre().toLowerCase().contains(searchInput);
+        });
     }
     private void handleDeleteBook(String title) {
         ArrayNode livres = (ArrayNode) data.get("livres");

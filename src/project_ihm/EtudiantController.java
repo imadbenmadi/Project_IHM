@@ -147,7 +147,7 @@ public class EtudiantController {
                 reqEmpruntNode.put("etudiant", etudiant);
 
                 //reqEmpruntNode.set("etudiant", etudiant);
-                /***
+
                 if (etudiant != null) { // Add null check
                     ObjectNode etudiantNode = objectMapper.createObjectNode();
                     etudiantNode.put("etudiant", etudiant);
@@ -155,7 +155,7 @@ public class EtudiantController {
                 } else {
                     System.out.println("Etudiant object is null for rental: " + rental.getNumeroEmprunt());
                 }
-                 ***/
+
                 // Serialize Book details
                 Book book = rental.getBook();
                 if (book != null) { // Add null check
