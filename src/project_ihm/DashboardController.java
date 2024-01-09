@@ -191,7 +191,9 @@ public class DashboardController {
             int rentId = emprunt.get("numeroEmprunt").asInt();
             int duration = emprunt.get("duree").asInt();
             JsonNode etudiantNode = emprunt.get("etudiant");
-            String studentName = etudiantNode.get("nom").asText() + " " + etudiantNode.get("prenom").asText();
+            String studentName = etudiantNode.has("nom") && etudiantNode.has("prenom") ?
+                    etudiantNode.get("nom").asText() + " " + etudiantNode.get("prenom").asText() :
+                    "";
             JsonNode livreNode = emprunt.get("livre");
             String bookTitle = livreNode.get("titre").asText();
 
