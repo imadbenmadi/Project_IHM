@@ -18,18 +18,12 @@ import java.util.List;
 public class Project_IHM extends Application {
 
     private static Project_IHM instance; // Singleton instance
-
-
-
-
     public static Project_IHM getInstance() {
         return instance;
     }
-
     @Override
     public void start(Stage primaryStage) {
-        instance = this; // Set the singleton instance
-
+        instance = this;
         try {
             // Load the Login FXML file and show the login window
             FXMLLoader loginLoader = new FXMLLoader(getClass().getResource("Login.fxml"));

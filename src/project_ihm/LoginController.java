@@ -38,7 +38,6 @@ public class LoginController {
 
     @FXML
     private void initialize() {
-        // Set up the login logic
         setupLoginLogic();
     }
 
@@ -56,16 +55,9 @@ public class LoginController {
     }
 
     private void authenticateUser(String inputUsername, String inputPassword) {
-        // Your authentication logic here
-
         if (inputUsername.equalsIgnoreCase("admin") && inputPassword.equals("admin")) {
-            // Admin Dashboard
             openAdminDashboard();
         } else {
-            // Check if the username exists in the database and the password matches
-            // For simplicity, I'm assuming that etudiant usernames are their passwords (numeroEtudiant)
-
-            // Mock data for demonstration
             List<Map<String, Object>> etudiants = getEtudiantDataFromJson();
             boolean isEtudiant = false;
 
@@ -75,19 +67,14 @@ public class LoginController {
 
                 if (inputUsername.equalsIgnoreCase(username) && inputPassword.equals(pwd)) {
                     isEtudiant = true;
-
-                    // Set etudiant information in the context
                     ApplicationContext.setEtudiantContext(etudiant);
-
                     break;
                 }
             }
 
             if (isEtudiant) {
-                // Etudiant Dashboard
                 openEtudiantDashboard();
             } else {
-                // Incorrect credentials
                 setErrorText("Incorrect username or password.");
             }
         }
@@ -98,16 +85,13 @@ public class LoginController {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode = objectMapper.readTree(new File("DataBase.json"));
             JsonNode etudiantsNode = rootNode.path("etudiants");
-
-            // Using ObjectReader for flexibility
             ObjectReader objectReader = objectMapper.readerFor(new TypeReference<List<Map<String, Object>>>() {});
             List<Map<String, Object>> etudiants = objectReader.readValue(etudiantsNode);
 
             return etudiants;
         } catch (IOException e) {
             e.printStackTrace();
-            // Handle the exception according to your application's needs
-            return new ArrayList<>(); // Return an empty list if there's an issue
+            return new ArrayList<>();
         }
     }
     public void showDashboard() {
